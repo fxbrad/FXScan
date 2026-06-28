@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scan results</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <h1>Scan results</h1>
+    <div class="meta">{{ report.root }} · {{ report.scanned_at }}</div>
+
+    <div class="cards">
+      <div class="card"><div class="n">{{ report.files_scanned }}</div><div class="l">files</div></div>
+      <div class="card"><div class="n">{{ report.resources_seen }}</div><div class="l">resources</div></div>
+      {% for s in severities|reverse %}
+      <div class="card"><div class="n sev-{{ s }}">{{ counts[s] }}</div><div class="l">{{ s }}</div></div>
+      {% endfor %}
+    </div>
+
+    <div class="toolbar">
+      <span class="filter active" data-sev="all">All</span>
+      {% for s in severities|reverse %}
+      <span class="filter" data-sev="{{ s }}">{{ s }}</span>
+      {% endfor %}
+      <span class="spacer"></span>
+      <a href="{{ url_for('report_html', scan_id=scan_id) }}">Download HTML report</a>
+      <a href="{{ url_for('index') }}">New scan</a>
+    </div>
+
+    {% if not flagged %}
+      <div class="empty">No findings. Nothing flagged in this folder.</div>
+    {% endif %}
+
+    {% for fr in flagged %}
+    <div class="file" data-max="{{ fr.max_severity }}" data-sevs="{{ fr.findings|map(attribute='severity')|join(',') }}">
+      <header onclick="this.parentNode.classList.toggle('open')">
+        <div>
+          <h2>{{ fr.path }}</h2>
+          <span class="res">{{ fr.resource }}{% if fr.note %} - {{ fr.note }}{% endif %}</span>
+        </div>
+        <div style="text-align:right">
+          <span class="sev"><span class="dot sev-bg-{{ fr.max_severity }}"></span>{{ fr.max_severity }}</span>
+          <br><span class="res">score {{ fr.score }} · {{ fr.findings|length }} finding(s)</span>
+        </div>
+      </header>
+      <div class="body">
+        <table>
+          <thead><tr><th>Severity</th><th>Category</th><th>Line</th><th>Detail</th></tr></thead>
+          <tbody>
+          {% for f in fr.findings %}
+            <tr data-sev="{{ f.severity }}">
+              <td><span class="sev"><span class="dot sev-bg-{{ f.severity }}"></span>{{ f.severity }}</span></td>
+              <td>{{ f.category }}<br><span class="res">{{ f.rule_id }}</span></td>
+              <td>{{ f.line or '' }}</td>
+              <td>
+                {{ f.explanation }}<br>
+                <code>{{ f.snippet }}</code>
+                {% if f.decoded %}<code class="decoded">decoded: {{ f.decoded[:300] }}</code>{% endif %}
+                {% if f.recommendation %}<br><span class="note">{{ f.recommendation }}</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <style>
+    .sev-info, .sev-bg-info { color: #6b7280; } .sev-bg-info { background: #6b7280; }
+    .sev-low { color: #2563eb; } .sev-bg-low { background: #2563eb; }
+    .sev-medium { color: #d97706; } .sev-bg-medium { background: #d97706; }
+    .sev-high { color: #dc2626; } .sev-bg-high { background: #dc2626; }
+    .sev-critical { color: #7f1d1d; } .sev-bg-critical { background: #7f1d1d; }
+  </style>
+  <div class="watermark">Join the <a href="https://discord.gg/x5avNnbEJT" target="_blank" rel="noopener">Discord</a> for support + updates</div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

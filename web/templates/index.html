@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FiveM Resource Scanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <h1>FiveM Resource Scanner</h1>
+    <div class="meta">Scan a resources folder or whole server for backdoors and suspicious code.</div>
+
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+    <form class="scan" method="post" action="{{ url_for('run_scan') }}">
+      <label for="path">Folder to scan</label>
+      <input type="text" id="path" name="path" value="{{ default_path }}" placeholder="D:/path/to/resources" autofocus>
+      <button type="submit">Scan</button>
+    </form>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="spinner"></div>
+    <div class="overlay-text">Scanning...</div>
+    <div class="overlay-path" id="overlay-path"></div>
+    <div class="overlay-sub">Large folders can take up to a minute.</div>
+    <div class="overlay-timer" id="overlay-timer">0s</div>
+  </div>
+
+  <div class="watermark">Join the <a href="https://discord.gg/x5avNnbEJT" target="_blank" rel="noopener">Discord</a> for support + updates</div>
+
+  <script>
+    document.querySelector('form.scan').addEventListener('submit', function () {
+      var path = document.getElementById('path').value.trim();
+      if (!path) return;
+      document.getElementById('overlay-path').textContent = path;
+      document.getElementById('overlay').hidden = false;
+      var t0 = Date.now();
+      setInterval(function () {
+        document.getElementById('overlay-timer').textContent =
+          Math.floor((Date.now() - t0) / 1000) + 's';
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

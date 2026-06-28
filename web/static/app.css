@@ -1,0 +1,87 @@
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #1f2937;
+  background: #f9fafb;
+  margin: 0;
+  padding: 24px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+a { color: #2563eb; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1100px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+.meta { color: #6b7280; margin-bottom: 20px; word-break: break-all; }
+
+form.scan { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 18px; }
+label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+input[type=text] {
+  width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px;
+  font-family: ui-monospace, Consolas, monospace; font-size: 14px;
+}
+button {
+  margin-top: 12px; background: #1f2937; color: #fff; border: none;
+  padding: 9px 18px; border-radius: 4px; cursor: pointer; font-size: 14px;
+}
+button:hover { background: #111827; }
+.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+         padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; white-space: pre-wrap; }
+
+.cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 20px; }
+.card { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; min-width: 88px; }
+.card .n { font-size: 22px; font-weight: 600; }
+.card .l { color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+
+.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.toolbar .filter { font-size: 13px; padding: 4px 10px; border: 1px solid #d1d5db; background: #fff;
+                   border-radius: 999px; cursor: pointer; color: #374151; }
+.toolbar .filter.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+.spacer { flex: 1; }
+
+.file { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 12px; overflow: hidden; }
+.file > header { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between;
+                 align-items: center; gap: 12px; }
+.file > header:hover { background: #f9fafb; }
+.file h2 { font-size: 13px; margin: 0; font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
+.file .res { color: #6b7280; font-size: 12px; }
+.file .body { display: none; border-top: 1px solid #e5e7eb; }
+.file.open .body { display: block; }
+.note { color: #6b7280; font-style: italic; font-size: 12px; }
+
+table { width: 100%; border-collapse: collapse; }
+td, th { text-align: left; padding: 7px 14px; border-top: 1px solid #f3f4f6; vertical-align: top; }
+th { color: #6b7280; font-size: 12px; font-weight: 600; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+.sev { font-weight: 600; white-space: nowrap; }
+code { font-family: ui-monospace, Consolas, monospace; background: #f3f4f6; padding: 1px 4px;
+       border-radius: 3px; white-space: pre-wrap; word-break: break-all; }
+.decoded { color: #7f1d1d; margin-top: 4px; display: block; }
+.empty { color: #6b7280; padding: 30px; text-align: center; }
+
+.watermark {
+  position: fixed; bottom: 12px; right: 14px; z-index: 50;
+  font-size: 12px; color: #9ca3af;
+  background: rgba(255, 255, 255, .9); border: 1px solid #e5e7eb;
+  padding: 5px 11px; border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+.watermark a { color: #6b7280; font-weight: 600; }
+.watermark a:hover { color: #5865f2; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(249, 250, 251, .94);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+}
+.overlay[hidden] { display: none; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e5e7eb; border-top-color: #1f2937; border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.overlay-text { font-size: 16px; font-weight: 600; color: #1f2937; }
+.overlay-sub { font-size: 13px; color: #6b7280; }
+.overlay-timer { font-size: 13px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+.overlay-path { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: #6b7280; }

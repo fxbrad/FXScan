@@ -1,0 +1,220 @@
+settings:
+  default_scan_path: ""
+
+  ignore_globs:
+    - "**/.git/**"
+    - "**/node_modules/**"
+    - "**/.vscode/**"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "pnpm-lock.yaml"
+    - "composer.lock"
+    - "*.min.js"
+    - "*.min.css"
+    - "*.ytd"
+    - "*.ydr"
+    - "*.ydd"
+    - "*.yft"
+    - "*.ybn"
+    - "*.ynv"
+    - "*.png"
+    - "*.jpg"
+    - "*.jpeg"
+    - "*.gif"
+    - "*.webp"
+    - "*.ogg"
+    - "*.wav"
+    - "*.mp3"
+    - "*.ttf"
+    - "*.otf"
+    - "*.woff"
+    - "*.woff2"
+    - "*.dds"
+    - "*.awc"
+    - "*.rpf"
+
+  # Vetted framework / runtime code. Matches here are scanned but their findings
+  # are suppressed from the score so they do not drown out real signal.
+  allowlist_globs:
+    - "**/citizen/**"
+    - "**/cfx-server-data-master/**"
+
+  allowlist_hashes: []
+
+  scannable_exts: [".lua", ".js", ".ts", ".json", ".cfg", ".html", ".sql", ".py"]
+
+  suspicious_in_resource_exts: [".exe", ".dll", ".bat", ".cmd", ".ps1", ".scr", ".vbs", ".jar"]
+
+  severity_weights: {info: 1, low: 3, medium: 8, high: 20, critical: 50}
+
+  max_file_bytes: 5242880          # skip reading files larger than 5 MB
+  entropy_threshold: 4.6           # bits/char above which a long string looks packed
+  entropy_min_len: 64             # only score entropy on strings at least this long
+
+  # Signal-combining escalation. If every listed category is present in one file,
+  # that file's worst finding is bumped to escalate_to. This is the false-positive
+  # defense: lone patterns stay low, dangerous combinations become critical.
+  combos:
+    - when: [remote_fetch, dynamic_exec]
+      escalate_to: critical
+    - when: [obfuscation, dynamic_exec]
+      escalate_to: critical
+    - when: [exfiltration, identifier_harvest]
+      escalate_to: critical
+    - when: [remote_fetch, os_access]
+      escalate_to: high
+
+rules:
+  - id: lua_loadstring
+    category: dynamic_exec
+    severity: medium
+    pattern: '\b(loadstring|load)\s*\('
+    description: "Dynamic Lua code execution"
+    recommendation: "Confirm the loaded source is a static local string, not remote or decoded data."
+
+  - id: lua_assert_load
+    category: dynamic_exec
+    severity: high
+    pattern: 'assert\s*\(\s*load(string)?\s*\('
+    description: "assert(load(...)) - classic packed-payload execution wrapper"
+    recommendation: "Inspect the wrapped payload; legitimate code rarely needs this."
+
+  - id: js_eval
+    category: dynamic_exec
+    severity: medium
+    pattern: '\beval\s*\('
+    description: "JavaScript eval of dynamic content"
+    recommendation: "Ensure the evaluated value is not attacker- or network-controlled."
+
+  - id: js_function_ctor
+    category: dynamic_exec
+    severity: medium
+    pattern: '\bnew\s+Function\s*\('
+    description: "JavaScript Function constructor (dynamic code execution)"
+    recommendation: "Treat like eval; verify the source string is trusted and static."
+
+  - id: http_perform_request
+    category: remote_fetch
+    severity: low
+    pattern: '\bPerformHttpRequest\s*\('
+    description: "Outbound HTTP request"
+    recommendation: "Benign for APIs/webhooks, but dangerous if the response is executed or carries server data."
+
+  - id: lua_http_request
+    category: remote_fetch
+    severity: low
+    pattern: '\bhttp\.request\s*\('
+    description: "Outbound HTTP request (LuaSocket/http)"
+    recommendation: "Verify the destination and that the response is not executed."
+
+  - id: js_fetch_remote
+    category: remote_fetch
+    severity: low
+    pattern: '\bfetch\s*\(\s*[`''"]https?://'
+    description: "Outbound fetch to an external URL"
+    recommendation: "Verify the destination host is intended."
+
+  - id: discord_webhook
+    category: exfiltration
+    severity: high
+    pattern: 'discord(app)?\.com/api/webhooks'
+    description: "Discord webhook URL - a common data-exfiltration channel"
+    recommendation: "Confirm this webhook is owner-controlled and intended."
+
+  - id: telegram_bot_api
+    category: exfiltration
+    severity: high
+    pattern: 'api\.telegram\.org/bot'
+    description: "Telegram bot API endpoint - possible exfiltration channel"
+    recommendation: "Confirm this is an intended integration, not data theft."
+
+  - id: pastebin_raw
+    category: exfiltration
+    severity: medium
+    pattern: '(pastebin\.com/raw|hastebin\.com|ghostbin\.|0x0\.st)'
+    description: "Paste-site raw endpoint - used to host or receive payloads"
+    recommendation: "Check whether code is pulled from or pushed to this paste site."
+
+  - id: identifier_harvest
+    category: identifier_harvest
+    severity: low
+    pattern: '\bGetPlayerIdentifier\w*\s*\(|license:|steam:1100001|\bGetPlayerToken\s*\('
+    description: "Reads player identifiers/tokens"
+    recommendation: "Normal in many scripts; suspicious when combined with an external send."
+
+  - id: add_principal
+    category: backdoor_access
+    severity: high
+    pattern: 'add_principal|add_ace\b|ExecuteCommand\s*\(\s*[`''"]?\s*add_'
+    description: "Grants ACE permissions at runtime (possible hidden admin backdoor)"
+    recommendation: "Verify who is granted access and from where."
+
+  - id: hidden_command
+    category: backdoor_access
+    severity: low
+    pattern: '\bRegisterCommand\s*\('
+    description: "Registers a console/chat command"
+    recommendation: "Normal feature; review commands that grant power or run dynamic input."
+
+  - id: server_event_exec
+    category: backdoor_access
+    severity: low
+    pattern: '\b(RegisterNetEvent|AddEventHandler)\s*\('
+    description: "Server/client event handler"
+    recommendation: "Normal; review handlers whose names are obfuscated or that run dynamic code."
+
+  - id: os_execute
+    category: os_access
+    severity: high
+    pattern: '\bos\.execute\s*\(|\bio\.popen\s*\('
+    description: "Executes an OS shell command"
+    recommendation: "Almost never needed in a FiveM resource; treat as high risk."
+
+  - id: os_remove
+    category: os_access
+    severity: medium
+    pattern: '\bos\.remove\s*\(|\bos\.rename\s*\('
+    description: "Deletes or renames files on the host"
+    recommendation: "Verify the targeted paths."
+
+  - id: io_write
+    category: os_access
+    severity: low
+    pattern: '\bio\.open\s*\([^)]*[`''"][wab]'
+    description: "Opens a file for writing on the host"
+    recommendation: "Check what is written and where."
+
+  - id: hex_escape_run
+    category: obfuscation
+    severity: medium
+    pattern: '(\\x[0-9A-Fa-f]{2}){8,}'
+    description: "Long run of \\xNN hex escapes (likely obfuscated string)"
+    recommendation: "Decode and inspect; obfuscation hides intent."
+
+  - id: decimal_escape_run
+    category: obfuscation
+    severity: medium
+    pattern: '(\\\d{2,3}){8,}'
+    description: "Long run of \\NNN decimal escapes (likely obfuscated string)"
+    recommendation: "Decode and inspect."
+
+  - id: string_char_chain
+    category: obfuscation
+    severity: medium
+    pattern: 'string\.char\s*\(\s*\d+\s*(,\s*\d+\s*){6,}\)'
+    description: "Long string.char(...) chain (builds a string from char codes)"
+    recommendation: "Decode and inspect the constructed string."
+
+  - id: fenv_abuse
+    category: obfuscation
+    severity: medium
+    pattern: '\b(getfenv|setfenv)\s*\('
+    description: "Environment manipulation (getfenv/setfenv) - common in obfuscators"
+    recommendation: "Rare in normal resource code; inspect surrounding logic."
+
+  - id: known_backdoor_marker
+    category: known_bad
+    severity: critical
+    pattern: '(__fivem_backdoor|krevox|FreezeMaster|loadstring\(decode|/api/keymaster/loadup)'
+    description: "Matches a published FiveM backdoor signature"
+    recommendation: "Remove this resource and rotate any exposed keys/tokens."
