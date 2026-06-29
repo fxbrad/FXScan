@@ -53,5 +53,6 @@ If a rule fires on known-good framework code, add a path glob to
 Run the tests:
 
 ```
+pip install -r requirements-dev.txt
 python -m pytest tests
 ```

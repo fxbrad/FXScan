@@ -44,5 +44,6 @@ without touching any Python. See `CONTRIBUTING.md` for the format.
 ## Running the tests
 
 ```
+pip install -r requirements-dev.txt
 python -m pytest tests
 ```
