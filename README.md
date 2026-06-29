@@ -1,5 +1,7 @@
 # FXScan
 
+[![tests](https://github.com/fxbrad/FXScan/actions/workflows/tests.yml/badge.svg)](https://github.com/fxbrad/FXScan/actions/workflows/tests.yml)
+
 A local tool for checking FiveM resources before you put them on your server.
 It scans a resources folder (or a whole server) and flags the things backdoors
 usually rely on: remote code loaders, Discord/Telegram exfiltration, hidden
