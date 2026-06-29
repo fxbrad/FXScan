@@ -1,9 +1,9 @@
 @echo off
-title FiveM Resource Scanner
+title FXScan
 cd /d "%~dp0"
 
 echo ============================================
-echo    FiveM Resource Scanner
+echo    FXScan - FiveM resource scanner
 echo ============================================
 echo.
 

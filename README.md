@@ -1,4 +1,4 @@
-# FiveM Resource Scanner
+# FXScan
 
 A local tool for checking FiveM resources before you put them on your server.
 It scans a resources folder (or a whole server) and flags the things backdoors

@@ -74,7 +74,7 @@ def report_html(scan_id: str):
     return Response(
         render_report(report),
         mimetype="text/html",
-        headers={"Content-Disposition": f'attachment; filename="fivem-scan-{scan_id}.html"'},
+        headers={"Content-Disposition": f'attachment; filename="fxscan-{scan_id}.html"'},
     )
 
 
@@ -84,5 +84,5 @@ def build_info():
 
 
 if __name__ == "__main__":
-    print("FiveM Resource Scanner running at http://127.0.0.1:5000")
+    print("FXScan running at http://127.0.0.1:5000")
     app.run(host="127.0.0.1", port=5000)

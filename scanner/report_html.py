@@ -105,8 +105,8 @@ def render(report: ScanReport) -> str:
     return (
         f"<!doctype html><html><head><meta charset='utf-8'>"
         f"<!-- build:{fp} -->"
-        f"<title>FiveM scan - {html.escape(report.root)}</title><style>{_CSS}</style></head><body>"
-        f"<h1>FiveM Resource Scan{zw}</h1>"
+        f"<title>FXScan - {html.escape(report.root)}</title><style>{_CSS}</style></head><body>"
+        f"<h1>FXScan{zw}</h1>"
         f"<div class='meta'>{html.escape(report.root)} · {report.scanned_at}</div>"
         f"<div class='cards'>{cards}</div>"
         f"{''.join(blocks)}{_WATERMARK}</body></html>"
